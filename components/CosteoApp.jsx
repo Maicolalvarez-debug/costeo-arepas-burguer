@@ -5,6 +5,7 @@ import {
   Plus, X, Trash2, Pencil, ChevronLeft, Search, Settings2,
   Package, ClipboardList, LayoutGrid, Check, AlertTriangle,
   RotateCcw, TrendingUp, ChevronRight, Save, LogOut, WifiOff,
+  Sun, Moon,
 } from "lucide-react";
 const UNIDADES = ["UNI", "KG", "GR", "LT", "ML"];
 /* ============================================================
@@ -59,25 +60,58 @@ const CSS = `
   --accent-deep: #8A3A22;
   --mustard: #E0A106;
   --mustard-ink: #5C3E00;
+  --mustard-bg: #FDEFD9;
+  --mustard-border: #F0D9A0;
   --positive: #4F7942;
   --positive-bg: #E9F0E3;
   --negative: #B23A2E;
   --negative-bg: #FBEAE7;
+  --backdrop: rgba(43,32,24,0.45);
+  --accent-shadow: rgba(166,71,42,0.35);
+  --card-shadow: rgba(43,32,24,0.10);
   --radius: 16px;
   --radius-sm: 10px;
+  color-scheme: light;
   font-family: 'Inter', system-ui, -apple-system, sans-serif;
   background: var(--bg);
   color: var(--ink);
   min-height: 100vh;
+  min-height: 100dvh;
   display: flex;
   justify-content: center;
   -webkit-font-smoothing: antialiased;
+  transition: background .2s ease, color .2s ease;
+}
+.ca-app[data-theme="dark"] {
+  color-scheme: dark;
+  --bg: #17130E;
+  --surface: #221B14;
+  --surface-alt: #271F16;
+  --ink: #F1E8D9;
+  --ink-soft: #B3A288;
+  --ink-faint: #6E6149;
+  --line: #362B1F;
+  --line-strong: #473A29;
+  --accent: #E17A46;
+  --accent-deep: #C7642F;
+  --mustard: #F0B92E;
+  --mustard-ink: #FBE6AF;
+  --mustard-bg: #3A2C14;
+  --mustard-border: #59451E;
+  --positive: #8AC46F;
+  --positive-bg: #22301B;
+  --negative: #E2897C;
+  --negative-bg: #3B2320;
+  --backdrop: rgba(0,0,0,0.6);
+  --accent-shadow: rgba(225,122,70,0.3);
+  --card-shadow: rgba(0,0,0,0.28);
 }
 .ca-app * { box-sizing: border-box; }
 .ca-shell {
   width: 100%;
   max-width: 480px;
   height: 100vh;
+  height: 100dvh;
   display: flex;
   flex-direction: column;
   background: var(--bg);
@@ -119,6 +153,12 @@ const CSS = `
   color: var(--ink-soft); background: var(--surface); border: 1px solid var(--line);
   display: flex; align-items: center; gap: 4px; flex-shrink: 0;
 }
+.ca-theme-btn {
+  width: 30px; height: 30px; border-radius: 50%; flex-shrink: 0;
+  display: flex; align-items: center; justify-content: center;
+  background: var(--surface); border: 1px solid var(--line); color: var(--ink);
+  cursor: pointer;
+}
 
 /* Main scroll area */
 .ca-main {
@@ -128,7 +168,7 @@ const CSS = `
   padding: 16px 16px 100px;
 }
 
-/* Bottom nav */
+/* Bottom nav (mobile) / sidebar nav (desktop, see breakpoint below) */
 .ca-nav {
   position: sticky;
   bottom: 0;
@@ -137,6 +177,7 @@ const CSS = `
   border-top: 1px solid var(--line);
   padding: 8px 6px calc(8px + env(safe-area-inset-bottom, 0px));
   z-index: 10;
+  flex-shrink: 0;
 }
 .ca-nav-btn {
   flex: 1; display: flex; flex-direction: column; align-items: center; gap: 3px;
@@ -157,6 +198,7 @@ const CSS = `
 .ca-search input::placeholder { color: var(--ink-faint); }
 
 /* Cards / rows */
+.ca-card-list { display: flex; flex-direction: column; }
 .ca-card {
   background: var(--surface); border: 1px solid var(--line);
   border-radius: var(--radius); padding: 14px 16px; margin-bottom: 10px;
@@ -173,7 +215,7 @@ const CSS = `
 .ca-price-row { display: flex; gap: 8px; margin-top: 6px; flex-wrap: wrap; }
 .ca-badge { font-size: 11px; font-weight: 600; padding: 3px 8px; border-radius: 20px; font-family: 'IBM Plex Mono', monospace; }
 .ca-badge.local { background: var(--surface-alt); color: var(--ink-soft); border: 1px solid var(--line); }
-.ca-badge.rappi { background: #FDEFD9; color: var(--mustard-ink); border: 1px solid #F0D9A0; }
+.ca-badge.rappi { background: var(--mustard-bg); color: var(--mustard-ink); border: 1px solid var(--mustard-border); }
 .ca-badge.margin-good { background: var(--positive-bg); color: var(--positive); }
 .ca-badge.margin-bad { background: var(--negative-bg); color: var(--negative); }
 
@@ -185,17 +227,17 @@ const CSS = `
 
 /* FAB */
 .ca-fab {
-  position: absolute; z-index: 8;
+  position: absolute; z-index: 8; right: 20px; bottom: 88px;
   width: 54px; height: 54px; border-radius: 50%;
   background: var(--accent); color: #fff; border: none;
   display: flex; align-items: center; justify-content: center;
-  box-shadow: 0 8px 20px rgba(166,71,42,0.35);
+  box-shadow: 0 8px 20px var(--accent-shadow);
   cursor: pointer;
 }
 
 /* Sheet / modal */
 .ca-backdrop {
-  position: fixed; inset: 0; background: rgba(43,32,24,0.45);
+  position: fixed; inset: 0; background: var(--backdrop);
   display: flex; align-items: flex-end; justify-content: center; z-index: 30;
 }
 .ca-sheet {
@@ -261,7 +303,7 @@ const CSS = `
 .ca-item-row:last-child { border-bottom: none; }
 .ca-item-name { flex: 1; min-width: 0; font-size: 14px; font-weight: 500; }
 .ca-item-unit { font-size: 11.5px; color: var(--ink-faint); }
-.ca-item-qty { width: 64px; text-align: right; border: 1px solid var(--line-strong); border-radius: 8px; padding: 7px 8px; font-family: 'IBM Plex Mono', monospace; font-size: 13.5px; }
+.ca-item-qty { width: 64px; text-align: right; border: 1px solid var(--line-strong); border-radius: 8px; padding: 7px 8px; font-family: 'IBM Plex Mono', monospace; font-size: 13.5px; background: var(--surface); color: var(--ink); }
 .ca-item-sub { width: 74px; text-align: right; font-family: 'IBM Plex Mono', monospace; font-size: 13px; color: var(--ink-soft); }
 .ca-item-del { color: var(--ink-faint); cursor: pointer; flex-shrink: 0; }
 
@@ -286,7 +328,7 @@ const CSS = `
 
 .ca-sort-tabs { display: flex; gap: 8px; margin-bottom: 14px; }
 .ca-sort-tab { padding: 7px 12px; border-radius: 20px; font-size: 12.5px; font-weight: 600; background: var(--surface); border: 1px solid var(--line); color: var(--ink-soft); cursor: pointer; }
-.ca-sort-tab.active { background: var(--ink); color: #fff; border-color: var(--ink); }
+.ca-sort-tab.active { background: var(--ink); color: var(--bg); border-color: var(--ink); }
 
 .ca-list-row { display: flex; align-items: center; gap: 10px; padding: 12px 0; border-bottom: 1px solid var(--line); }
 .ca-list-row:last-child { border-bottom: none; }
@@ -302,7 +344,44 @@ const CSS = `
 .ca-confirm-msg { font-size: 13.5px; color: var(--ink-soft); margin: 0; line-height: 1.5; }
 
 .ca-toggle-row { display: flex; align-items: center; justify-content: space-between; padding: 4px 0; }
-.ca-loading { display: flex; align-items: center; justify-content: center; min-height: 100vh; color: var(--ink-soft); font-size: 13px; }
+.ca-loading { display: flex; align-items: center; justify-content: center; min-height: 100vh; min-height: 100dvh; color: var(--ink-soft); font-size: 13px; }
+
+/* ===================== Desktop layout ===================== */
+@media (min-width: 860px) {
+  .ca-app { padding: 28px; align-items: center; }
+  .ca-shell {
+    max-width: 1040px;
+    width: 100%;
+    height: min(100dvh - 56px, 840px);
+    min-height: 560px;
+    display: grid;
+    grid-template-columns: 224px 1fr;
+    grid-template-rows: auto 1fr;
+    grid-template-areas: "nav header" "nav main";
+    border-radius: 24px;
+    border: 1px solid var(--line);
+    box-shadow: 0 24px 60px var(--card-shadow);
+  }
+  .ca-header { grid-area: header; }
+  .ca-main { grid-area: main; padding: 26px 36px 90px; }
+  .ca-nav {
+    grid-area: nav; position: static; flex-direction: column; align-items: stretch;
+    justify-content: flex-start; gap: 3px; padding: 22px 12px; border-top: none;
+    border-right: 1px solid var(--line); background: var(--surface-alt);
+  }
+  .ca-nav-btn {
+    flex-direction: row; justify-content: flex-start; gap: 11px;
+    padding: 10px 12px; border-radius: 10px; font-size: 13px;
+  }
+  .ca-nav-btn .dot { display: none; }
+  .ca-nav-btn.active { background: var(--surface); color: var(--accent); }
+  .ca-backdrop { align-items: center; }
+  .ca-sheet { border-radius: 20px; max-height: 82vh; }
+  .ca-stat-grid { grid-template-columns: repeat(4, 1fr); }
+  .ca-card-list { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 10px; }
+  .ca-card { margin-bottom: 0; }
+  .ca-fab { bottom: 28px; }
+}
 `;
 
 /* ============================================================
@@ -363,19 +442,21 @@ function IngredientesView({ ingredients, usageCount, onEdit, onNew }) {
           <p>No hay ingredientes que coincidan.<br />Toca “+” para agregar uno nuevo.</p>
         </div>
       ) : (
-        filtered.map((ing) => (
-          <div className="ca-card" key={ing.id} onClick={() => onEdit(ing)}>
-            <div className="ca-card-main">
-              <p className="ca-card-title">{ing.nombre}</p>
-              <p className="ca-card-sub">
-                {ing.unidad} · compra {ing.pesoVol} por {formatCOP(ing.costoTotal)}
-                {usageCount[ing.id] ? ` · usado en ${usageCount[ing.id]} receta${usageCount[ing.id] > 1 ? "s" : ""}` : ""}
-              </p>
+        <div className="ca-card-list">
+          {filtered.map((ing) => (
+            <div className="ca-card" key={ing.id} onClick={() => onEdit(ing)}>
+              <div className="ca-card-main">
+                <p className="ca-card-title">{ing.nombre}</p>
+                <p className="ca-card-sub">
+                  {ing.unidad} · compra {ing.pesoVol} por {formatCOP(ing.costoTotal)}
+                  {usageCount[ing.id] ? ` · usado en ${usageCount[ing.id]} receta${usageCount[ing.id] > 1 ? "s" : ""}` : ""}
+                </p>
+              </div>
+              <span className="ca-card-value">{formatCOP(unitCost(ing))}</span>
+              <ChevronRight size={16} className="ca-chev" />
             </div>
-            <span className="ca-card-value">{formatCOP(unitCost(ing))}</span>
-            <ChevronRight size={16} className="ca-chev" />
-          </div>
-        ))
+          ))}
+        </div>
       )}
     </div>
   );
@@ -492,19 +573,21 @@ function RecetasView({ recipes, ingredientsById, params, onOpen, onNew }) {
           <p>No hay recetas que coincidan.<br />Toca “+” para crear una.</p>
         </div>
       ) : (
-        filtered.map((r) => (
-          <div className="ca-card" key={r.id} onClick={() => onOpen(r.id)} style={{ alignItems: "flex-start" }}>
-            <div className="ca-card-main">
-              <p className="ca-card-title">{r.nombre}</p>
-              <p className="ca-card-sub">Costo {formatCOP(r.costo)} · {r.items.length} ingrediente{r.items.length !== 1 ? "s" : ""}</p>
-              <div className="ca-price-row">
-                <span className="ca-badge local">Local {formatCOP(r.precioLocal)}</span>
-                <span className="ca-badge rappi">Rappi {formatCOP(r.precioRappi)}</span>
+        <div className="ca-card-list">
+          {filtered.map((r) => (
+            <div className="ca-card" key={r.id} onClick={() => onOpen(r.id)} style={{ alignItems: "flex-start" }}>
+              <div className="ca-card-main">
+                <p className="ca-card-title">{r.nombre}</p>
+                <p className="ca-card-sub">Costo {formatCOP(r.costo)} · {r.items.length} ingrediente{r.items.length !== 1 ? "s" : ""}</p>
+                <div className="ca-price-row">
+                  <span className="ca-badge local">Local {formatCOP(r.precioLocal)}</span>
+                  <span className="ca-badge rappi">Rappi {formatCOP(r.precioRappi)}</span>
+                </div>
               </div>
+              <ChevronRight size={16} className="ca-chev" style={{ marginTop: 4 }} />
             </div>
-            <ChevronRight size={16} className="ca-chev" style={{ marginTop: 4 }} />
-          </div>
-        ))
+          ))}
+        </div>
       )}
     </div>
   );
@@ -819,7 +902,7 @@ const VIEW_META = {
   parametros: { eyebrow: "Ajustes", title: "Parámetros" },
 };
 
-function Header({ view, onBackTitle, onBack, saveState }) {
+function Header({ view, onBackTitle, onBack, saveState, theme, onToggleTheme }) {
   const meta = onBackTitle ? null : VIEW_META[view];
   return (
     <div className="ca-header">
@@ -830,6 +913,9 @@ function Header({ view, onBackTitle, onBack, saveState }) {
         {meta && <p className="ca-header-eyebrow">{meta.eyebrow}</p>}
         <h1 className="ca-header-title ca-display">{onBackTitle || meta.title}</h1>
       </div>
+      <button className="ca-theme-btn" onClick={onToggleTheme} aria-label="Cambiar tema">
+        {theme === "dark" ? <Sun size={15} /> : <Moon size={15} />}
+      </button>
       <span className="ca-save-pill">
         <span
           style={{
@@ -874,9 +960,35 @@ export default function App() {
   const [openRecipeId, setOpenRecipeId] = useState(null);
   const [editingIngredient, setEditingIngredient] = useState(undefined); // undefined=closed, null=new, obj=edit
   const [saveState, setSaveState] = useState("saved"); // saved | saving | error
+  const [theme, setTheme] = useState("light");
 
   const recipeSaveTimer = useRef(null);
   const paramsSaveTimer = useRef(null);
+
+  useEffect(() => {
+    try {
+      const stored = window.localStorage.getItem("ca-theme");
+      if (stored === "light" || stored === "dark") {
+        setTheme(stored);
+      } else if (window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches) {
+        setTheme("dark");
+      }
+    } catch (e) {
+      // localStorage no disponible; se queda en "light"
+    }
+  }, []);
+
+  const toggleTheme = () => {
+    setTheme((t) => {
+      const next = t === "dark" ? "light" : "dark";
+      try {
+        window.localStorage.setItem("ca-theme", next);
+      } catch (e) {
+        // ignore
+      }
+      return next;
+    });
+  };
 
   const loadData = async () => {
     setLoadState("loading");
@@ -918,7 +1030,7 @@ export default function App() {
 
   if (loadState === "loading") {
     return (
-      <div className="ca-app">
+      <div className="ca-app" data-theme={theme}>
         <style>{CSS}</style>
         <div className="ca-loading">Cargando tu menú…</div>
       </div>
@@ -927,7 +1039,7 @@ export default function App() {
 
   if (loadState === "error") {
     return (
-      <div className="ca-app">
+      <div className="ca-app" data-theme={theme}>
         <style>{CSS}</style>
         <div className="ca-loading" style={{ flexDirection: "column", gap: 14, padding: 30, textAlign: "center" }}>
           <WifiOff size={28} color="var(--negative)" />
@@ -1061,13 +1173,13 @@ export default function App() {
   const openRecipe = openRecipeId ? data.recipes.find((r) => r.id === openRecipeId) : null;
 
   return (
-    <div className="ca-app">
+    <div className="ca-app" data-theme={theme}>
       <style>{CSS}</style>
       <div className="ca-shell">
         {openRecipe ? (
-          <Header onBackTitle={openRecipe.nombre || "Receta"} onBack={() => setOpenRecipeId(null)} saveState={saveState} />
+          <Header onBackTitle={openRecipe.nombre || "Receta"} onBack={() => setOpenRecipeId(null)} saveState={saveState} theme={theme} onToggleTheme={toggleTheme} />
         ) : (
-          <Header view={view} saveState={saveState} />
+          <Header view={view} saveState={saveState} theme={theme} onToggleTheme={toggleTheme} />
         )}
 
         <div className="ca-main">
@@ -1094,12 +1206,12 @@ export default function App() {
         {!openRecipe && <BottomNav view={view} setView={setView} />}
 
         {!openRecipe && view === "recetas" && (
-          <button className="ca-fab" style={{ right: 20, bottom: 88 }} onClick={createRecipe} aria-label="Nueva receta">
+          <button className="ca-fab" onClick={createRecipe} aria-label="Nueva receta">
             <Plus size={24} />
           </button>
         )}
         {!openRecipe && view === "ingredientes" && (
-          <button className="ca-fab" style={{ right: 20, bottom: 88 }} onClick={() => setEditingIngredient(null)} aria-label="Nuevo ingrediente">
+          <button className="ca-fab" onClick={() => setEditingIngredient(null)} aria-label="Nuevo ingrediente">
             <Plus size={24} />
           </button>
         )}
